@@ -2,17 +2,16 @@
 title: "Day 0. Installation and demonstration"
 author: "Nicholas Michalak"
 date: "6/24/2017"
-output:
-  html_document: 
-    code_folding: show
+output: 
+  html_document:
     fig_height: 7.5
     fig_width: 10.5
     keep_md: yes
     theme: readable
-    toc: yes
+    toc: true
     toc_float:
-      collapsed: yes
-      smooth_scroll: yes
+      collapsed: false
+      smooth_scroll: false
 ---
 
 # install prerequisite packages
@@ -30,9 +29,129 @@ install_needed_pkgs(needed_packages = needed_packages)
 
 ```
 
+# running R code: a complex but important example
+
+## 5 numbers drawn randomly from numbers 1-10
+
+```{r}
+
+my_numbers <- c(10, 6, 2, 8, 3)
+
+```
+
+## use a "?" before the name of an R function to view detailed information about that function
+
+```{r}
+
+?c
+
+```
+
+## how long is this vector of numbers? / how many numbers are there?
+
+```{r}
+
+length(my_numbers)
+
+```
+
+## what's the sum of these numbers?
+
+```{r}
+
+sum(my_numbers)
+
+```
+
+## what's the mean / average of these numbers
+
+```{r}
+
+sum(my_numbers) / length(my_numbers)
+
+```
+
+## we can also use the `mean()` function
+
+```{r}
+
+mean(my_numbers)
+
+```
+
+## how do functions work? 
+
+```{r}
+
+compute_mean <- function(values) {
+  
+  sum(values) / length(values)
+  
+}
+
+```
+
+## now let's use our `compute_mean()` function
+
+```{r}
+
+compute_mean(values = my_numbers)
+
+```
+
+## functions are "stupid"; R is "stupid"
+> they only do exactly what you tell them to do and assume what they are programmed to assume. what if we add a missing value (a.k.a., NA, "Not available")
+
+```{r}
+
+my_numbers <- c(10, 6, 2, 8, 3, NA)
+
+```
+
+## now use our `compute_mean()` function on this new vector
+
+```{r}
+
+compute_mean(values = my_numbers)
+
+```
+
+> is this what you expected? Turns out, this isn't a quirky feature of R. R was designed by statisticians and mathematicians. NA represents a value that is unknown. Ask yourself, what is the sum of an unknown value and 17? If you don't know the value, then you don't know the value of adding it to 17 either. Our `compute_mean()` function gives NA for this reason: the mean of 5 values and an unknwon value is NA; it's unknown; it's not available or missing.
+
+## when you use functions throughout this course and into your own research ...
+> think about what the functions "assume" or "know"; ask, "What do I want the function to do? What do I expect it to do? Can the function do what I want with the information I gave it?"
+
+```{r}
+
+compute_mean <- function(values, remove_missing = TRUE) {
+  
+  if (remove_missing == TRUE) {
+    
+    values <- na.omit(values)
+    
+  }
+  
+  sum(values) / length(values)
+  
+}
+
+```
+
+## remember this example every time you give data to a function
+
+```{r}
+
+compute_mean(values = my_numbers, remove_missing = TRUE)
+
+# by the way, the mean() function also has this argument; so does sum() and many other trusty functions
+mean(my_numbers, na.rm = TRUE)
+
+```
+
 # generate data for examples
 
 ```{r}
+
 # create four variables: N, x, z, and y
 # 100 observations per variable
 N <- 100
@@ -56,6 +175,7 @@ my_data <- data.frame(id, y, x, z)
 ```{r}
 
 my_data %>%
+  select(x, y, z) %>%
   psych::describe(.)
 
 ```
@@ -65,7 +185,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  select(-id) %>%
+  select(x, y, z) %>%
   pairs.panels(pch = ".")
 
 ```
@@ -75,7 +195,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  gather(variable, value, -id) %>%
+  gather(variable, value, x, y, z) %>%
   ggplot() +
   geom_histogram(aes(x = value)) +
   facet_wrap(~ variable, nrow = 3)
@@ -87,7 +207,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  gather(variable, value, -id) %>%
+  gather(variable, value, x, y, z) %>%
   ggplot(aes(x = variable, y = value)) +
   geom_boxplot()
 
@@ -119,7 +239,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  select(-id) %>%
+  select(x, y, z) %>%
   corr.test() %>%
   print(short = FALSE)
 
@@ -129,7 +249,7 @@ my_data %>%
 
 ```{r}
 my_data %>%
-  select(-id) %>%
+  select(x, y, z) %>%
   principal()
 ```
 
@@ -138,7 +258,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  select(-id) %>%
+  select(x, y, z) %>%
   fa()
 
 ```
@@ -157,7 +277,7 @@ t.test(z, y)
 ```{r}
 
 my_data %>%
-  gather(variable, value, -id) %>%
+  gather(variable, value, x, y, z) %>%
   mutate(id = 1:300) %>%
   aov_car(formula = value ~ variable + Error(id), data = .) %>%
   summary(.)
@@ -169,7 +289,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  gather(variable, value, -id) %>%
+  gather(variable, value, x, y, z) %>%
   mutate(id = 1:300) %>%
   aov_car(formula = value ~ variable + Error(id), data = .) %>%
   lsmeans::lsmeans(specs = "variable") %>%
@@ -200,7 +320,7 @@ mes(m.1 = mean(x),
 ```{r}
 
 my_data %>%
-  gather(variable, value, -id) %>%
+  gather(variable, value, x, y, z) %>%
   aov_car(formula = value ~ variable + Error(id/variable), data = .) %>%
   summary(.)
 
@@ -211,7 +331,7 @@ my_data %>%
 ```{r}
 
 my_data %>%
-  gather(variable, value, -id) %>%
+  gather(variable, value, x, y, z) %>%
   aov_car(formula = value ~ variable + Error(id/variable), data = .) %>%
   lsmeans::lsmeans(specs = "variable") %>%
   contrast(list(xy = c(-1, 1, 0),
@@ -223,9 +343,11 @@ my_data %>%
 
 # mediation
 
+## write model
+
 ```{r}
 
-# path label combes before variable
+# path label comes before variable
 # e.g. z ~ a * x = label = regress z on x, label it a
 my_mediaition <- "# a path
                     z ~ a * x
@@ -240,12 +362,23 @@ my_mediaition <- "# a path
                     ab := a * b
                     total := c + (a * b)"
 
-# fit model
+```
+
+
+## fit model
+
+```{r}
+
 my_mediaition %>%
   sem(data = my_data) %>%
   summary(.)
 
-# parameter estimates with boostraped CIs
+```
+
+## parameter estimates with boostraped CIs
+
+```{r}
+
 my_mediaition %>%
   sem(data = my_data,
       se = "bootstrap",
@@ -283,8 +416,68 @@ test_slopes(y = y,
 
 # model summary
 my_data %>%
-  gather(variable, value, -id) %>%
-  lmer(formula = value ~ variable + (1 | id), data = .) %>%
+  gather(variable, value, x, y, z) %>%
+  lmer(formula = value ~ variable + (1 | id) + (1 | variable), data = .) %>%
   summary(.)
 
 ```
+
+## print random intercepts
+
+```{r}
+
+my_data %>%
+  gather(variable, value, x, y, z) %>%
+  lmer(formula = value ~ variable + (1 | id) + (1 | variable), data = .) %>%
+  coefficients(.)
+
+```
+
+# latent growth curve
+
+## write model
+
+```{r}
+
+my_growth <- "# latent intercept
+                i =~ 1 * x + 1 * y + 1 * z
+
+              # latent slope
+                s =~ 0 * x + 1 * y + 2 * z"
+
+```
+
+
+## fit model
+
+```{r}
+
+my_growth %>%
+  growth(data = my_data) %>%
+  summary(.)
+
+```
+
+
+## parameter estimates with boostraped CIs
+
+```{r}
+
+my_growth %>%
+  growth(data = my_data,
+         se = "bootstrap",
+         bootstrap = 1000) %>%
+  parameterEstimates(boot.ci.type = "bca.simple")
+
+```
+
+## print intercepts and slopes
+
+```{r}
+
+my_growth %>%
+  growth(data = my_data) %>%
+  predict(.)
+
+```
+
